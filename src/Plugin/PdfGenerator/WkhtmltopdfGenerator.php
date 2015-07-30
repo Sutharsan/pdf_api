@@ -77,7 +77,7 @@ class WkhtmltopdfGenerator extends PdfGeneratorBase implements ContainerFactoryP
         $filename = str_replace("/", "_", \Drupal::service('path.current')->getPath());
         $filename = substr($filename, 1);
       }
-      $this->stream("", $filename . '.pdf');
+      $this->stream($filename . '.pdf');
     }
     else
       $this->send();
@@ -87,7 +87,7 @@ class WkhtmltopdfGenerator extends PdfGeneratorBase implements ContainerFactoryP
    */
   public function getObject() {
     return $this->generator;
-  } 
+  }
 
   /**
    * {@inheritdoc}
@@ -137,15 +137,15 @@ class WkhtmltopdfGenerator extends PdfGeneratorBase implements ContainerFactoryP
   /**
    * {@inheritdoc}
    */
-  public function send($filename=null) {
+  public function send() {
     $this->preGenerate();
-    $this->generator->send($filename);
+    $this->generator->send();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function stream($html, $filelocation) {
+  public function stream($filelocation) {
     $this->preGenerate();
     $this->generator->saveAs($filelocation);
   }

@@ -11,6 +11,7 @@ use Drupal\pdf_api\Plugin\PdfGeneratorBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\pdf_api\Annotation\PdfGenerator;
 use Drupal\Core\Annotation\Translation;
+use Drupal\pdf_api\Plugin\PdfGeneratorInterface;
 use \mPDF;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -70,12 +71,16 @@ class mpdfGenerator extends PdfGeneratorBase implements ContainerFactoryPluginIn
     $this->setHeader($header_content);
     $this->setFooter($footer_content);
     $filename = $pdf_location;
+    $this->preGenerate();
+    $stylesheet = '.node_view  { display: none; }';
+    $this->generator->WriteHTML($stylesheet, 1);
+    $this->generator->WriteHTML(utf8_encode($pdf_content), 0);
     if($save_pdf) {
       if(empty($filename)) {
         $filename = str_replace("/", "_", \Drupal::service('path.current')->getPath());
         $filename = substr($filename, 1);
       }
-      $this->stream(utf8_encode($pdf_content), $filename.'.pdf');
+    $this->stream($filename.'.pdf');
     }
     else
       $this->send(utf8_encode($pdf_content));
@@ -93,7 +98,7 @@ class mpdfGenerator extends PdfGeneratorBase implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public function setHeader($text) {
-    $this->generator->SetHeader($text); 
+    $this->generator->SetHeader($text);
   }
   
   /**
@@ -107,7 +112,7 @@ class mpdfGenerator extends PdfGeneratorBase implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public function setPageOrientation($orientation = PdfGeneratorInterface::PORTRAIT) {
-    if($orientation == 'portrait')
+    if($orientation == PdfGeneratorInterface::PORTRAIT)
       $orientation = 'P';
     else
       $orientation = 'L';
@@ -154,24 +159,14 @@ class mpdfGenerator extends PdfGeneratorBase implements ContainerFactoryPluginIn
   /**
    * {@inheritdoc}
    */
-  public function send($html) {
-    $this->preGenerate();
-    // @todo Try to make it generic.
-    $stylesheet = '.node_view  { display: none; }';
-    $this->generator->WriteHTML($stylesheet, 1);
-    $this->generator->WriteHTML($html, 0);
+  public function send() {
     $this->generator->Output("", "I");
   }
 
   /**
    * {@inheritdoc}
    */
-  public function stream($html, $filelocation) {
-    $this->preGenerate();
-    // This way you can add css file too.
-    $stylesheet = '.node_view  { display: none; }';
-    $this->generator->WriteHTML($stylesheet, 1);
-    $this->generator->WriteHTML($html, 0);
+  public function stream($filelocation) {
     $this->generator->Output($filelocation, 'F');
   }
 

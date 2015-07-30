@@ -72,21 +72,18 @@ class dompdfGenerator extends PdfGeneratorBase implements ContainerFactoryPlugin
   public function setter($pdf_content, $pdf_location, $save_pdf, $paper_orientation, $paper_size, $footer_content, $header_content) {
     $this->setPageOrientation($paper_orientation);
     $this->addPage($pdf_content);
-    $this->setFooter("");
-      if($save_pdf) {
-        $filename = $pdf_location;
-        if(empty($filename)) {
-          $filename = str_replace("/", "_", \Drupal::service('path.current')->getPath());
-          $filename = substr($filename, 1);
-        }
-        $this->stream("", $filename . '.pdf');
+    $this->setHeader($header_content);
+    if($save_pdf) {
+      $filename = $pdf_location;
+      if(empty($filename)) {
+        // if user does not enters default name of PDF then name should be made from its current path 
+        $filename = str_replace('/', '_', \Drupal::service('path.current')->getPath());
+        $filename = substr($filename, 1);
       }
-      else
-        $this->send("");
-    $this->generator->load_html($pdf_content);
-    $this->generator->render();
-    $this->generator->set_paper("", $paper_orientation);
-    $this->generator->stream("sample.pdf",array('Attachment'=>0));
+      $this->stream("", $filename . '.pdf');
+    }
+    else
+      $this->send("");
   }
 
   /**
@@ -94,32 +91,29 @@ class dompdfGenerator extends PdfGeneratorBase implements ContainerFactoryPlugin
    */
   public function getObject() {
     return $this->generator;
-  } 
-  
+  }
+
   /**
    * {@inheritdoc}
    */
   public function setHeader($text) {
-    // still to be found out.
+    $canvas = $this->generator->get_canvas();
+    $canvas->page_text(72, 18, "Header: {PAGE_COUNT}", "", 11, array(0,0,0));
   }
 
   /**
    * {@inheritdoc}
    */
   public function addPage($html) {
-    $this->generator->AddPage();
-    $this->generator->writeHTML($html);
+    $this->generator->load_html($html);
+    $this->generator->render();
   }
 
   /**
    * {@inheritdoc}
    */
   public function setPageOrientation($orientation = PdfGeneratorInterface::PORTRAIT) {
-    if($orientation == 'portrait')
-      $orientation = 'P';
-    else
-      $orientation = 'L';
-    $this->generator->set_paper("", $paper_orientation);
+    $this->generator->set_paper("", $orientation);
   }
 
   /**
@@ -127,7 +121,7 @@ class dompdfGenerator extends PdfGeneratorBase implements ContainerFactoryPlugin
    */
   public function setPageSize($page_size) {
     if ($this->isValidPageSize($page_size)) {
-    $this->generator->set_paper($paper_size);
+    $this->generator->set_paper($page_size);
     }
   }
 
@@ -135,8 +129,9 @@ class dompdfGenerator extends PdfGeneratorBase implements ContainerFactoryPlugin
    * {@inheritdoc}
    */
   public function setFooter($text) {
-    // still to be found out.
-  } 
+    // @todo see issue over here: https://github.com/dompdf/dompdf/issues/571
+  }
+
 
   /**
    * {@inheritdoc}
@@ -149,15 +144,15 @@ class dompdfGenerator extends PdfGeneratorBase implements ContainerFactoryPlugin
   /**
    * {@inheritdoc}
    */
-  public function send($html) {
-    $this->generator->Output('htmlout.pdf', 'I');
+  public function send() {
+    $this->generator->stream("sample.pdf",array('Attachment'=>0));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function stream($html, $filelocation) {
-    $this->generator->Output($filelocation, 'D');
+  public function stream($filelocation) {
+    $this->generator->stream($filelocation);
   }
 
 }

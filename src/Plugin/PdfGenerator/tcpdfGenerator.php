@@ -60,7 +60,7 @@ class tcpdfGenerator extends PdfGeneratorBase implements ContainerFactoryPluginI
       $container->get('tcpdf')
     );
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -85,7 +85,7 @@ class tcpdfGenerator extends PdfGeneratorBase implements ContainerFactoryPluginI
    */
   public function getObject() {
     return $this->generator;
-  } 
+  }
   
   /**
    * {@inheritdoc}
@@ -133,21 +133,20 @@ class tcpdfGenerator extends PdfGeneratorBase implements ContainerFactoryPluginI
    * {@inheritdoc}
    */
   public function save($location) {
-    $this->preGenerate();
     $this->generator->send($location);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function send($html) {
+  public function send() {
     $this->generator->Output('htmlout.pdf', 'I');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function stream($html, $filelocation) {
+  public function stream($filelocation) {
     $this->generator->Output($filelocation, 'D');
   }
 
